@@ -1,0 +1,23 @@
+{
+    "name": "cloudease/cloudease",
+    "description": "A project for Cloudease learning management system",
+    "license": "proprietary",
+    "autoload": {
+        "psr-4": {
+            "Public\\": "public/",
+            "Components\\": "pages/components/",
+            "App\\": "app/",
+            "Connection\\": "connection/",
+            "Pages\\": "pages/"
+        }
+    },
+    "authors": [
+        {
+            "name": "cloudease",
+            "email": "cloudease@example.com"
+        }
+    ],
+    "require": {
+        "guzzlehttp/guzzle": "^7.9"
+    }
+}
