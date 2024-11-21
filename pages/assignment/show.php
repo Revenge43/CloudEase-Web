@@ -78,11 +78,11 @@
             <!-- Comments Section -->
             <div class="p-6 mt-6 bg-white rounded-lg shadow-md">
                 <h4 class="text-xl font-semibold text-gray-800">Comments</h4>
-                
+
                 <!-- Comment Form -->
                 <form action="show.php?id=<?= $id ?>&courseId=<?= $courseId ?>" method="POST" class="mt-4" enctype="multipart/form-data">
                     <label for="comment" class="block text-gray-700 font-medium">Add a Comment</label>
-                    <textarea id="comment" name="comment" rows="3" 
+                    <textarea id="comment" name="comment" rows="3"
                             class="w-full mt-2 p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
                             placeholder="Write your comment here..." required></textarea>
 
@@ -103,11 +103,10 @@
                                 <span class="font-semibold"><?= ucwords($comments->getUserName($comment['user_id'])) ?>:</span>
                                 <?= $comment['text'] ?>
                             </p>
-                            <p class="text-sm text-gray-500">Posted on: <?= date('M d, Y', strtotime($comment['timestamp'])); ?></p>
 
                             <!-- Check for attachment and display based on file type -->
                             <div class="mt-2">
-                                <?php 
+                                <?php
                                     $filePath = $comment['file'] ?? ''; // Assuming the file path is stored in 'file' column
                                     if ($filePath) {
                                         $fileExtension = pathinfo($filePath, PATHINFO_EXTENSION);
@@ -129,6 +128,8 @@
                                     }
                                 ?>
                             </div>
+
+                            <p class="text-sm text-gray-500">Posted on: <?= date('M d, Y', strtotime($comment['timestamp'])); ?></p>
                         </div>
                     <?php endforeach; ?>
                 </div>
@@ -140,13 +141,13 @@
         $(document).ready(function() {
             function fetchComments() {
                 $.ajax({
-                    url: 'fetch_comments.php', 
+                    url: 'fetch_comments.php',
                     type: 'GET',
                     data: { id: <?= $id ?>, userId: <?= $userId ?>, courseId: <?= $courseId ?>},
                     success: function(data) {
                         const comments = JSON.parse(data);
                         let commentsHtml = '';
-                        
+
                     // Loop through comments and build the HTML
                     $.each(comments, function(index, comment) {
                         let attachmentHtml = '';

@@ -1,3 +1,13 @@
+<?php
+session_start();
+
+if (!isset($_SESSION['access_token'])) {
+
+    header("Location: forbidden.php");
+
+    exit;
+}
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>

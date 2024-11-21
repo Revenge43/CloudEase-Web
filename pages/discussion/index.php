@@ -6,6 +6,13 @@ session_start();
 
 use App\Course;
 
+if (!isset($_SESSION['access_token'])) {
+
+    header("Location: ../../forbidden.php");
+
+    exit;
+}
+
 $course = new Course();
 
 $courses = $course->getCourses();
@@ -52,7 +59,7 @@ if (isset($_GET['id'])) {
 
             <!-- Courses Content -->
             <div class="p-6 bg-gray-100">
-              
+
             </div>
 
         </main>

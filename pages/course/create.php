@@ -7,6 +7,13 @@ session_start();
 use App\Course;
 use App\Helpers;
 
+if (!isset($_SESSION['access_token'])) {
+
+    header("Location: ../../forbidden.php");
+
+    exit;
+}
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $title = $_POST['title'] ?? null;
@@ -28,6 +35,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($title && $description) {
 
         $result = $course->createCourse($title, $description, $attachmentUrl, $teacherId);
+
+        header("Location: index.php?success=Course created successfully");
 
     } else {
 
@@ -79,7 +88,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <!-- Course Creation Form -->
             <form action="<?= $_SERVER['PHP_SELF'] ?>" method="POST" enctype="multipart/form-data" class="bg-white p-6 rounded-lg shadow-md w-full">
 
-                <div class="mb-4">  
+                <div class="mb-4">
                     <label for="course-title" class="block text-gray-700 font-medium">Course Title</label>
                     <input type="text" id="course-title" name="title"
                            class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"

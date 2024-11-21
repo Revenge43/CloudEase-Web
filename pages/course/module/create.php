@@ -6,6 +6,13 @@ session_start();
 use App\Course;
 use App\Module;
 
+if (!isset($_SESSION['access_token'])) {
+
+    header("Location: ../../forbidden.php");
+
+    exit;
+}
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $title = $_POST['module_title'] ?? null;

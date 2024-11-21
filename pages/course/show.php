@@ -7,6 +7,13 @@ session_start();
 use App\Course;
 use App\Assignment;
 
+if (!isset($_SESSION['access_token'])) {
+
+    header("Location: ../../forbidden.php");
+
+    exit;
+}
+
 $courseId = $_GET['id'];
 
 $course = new Course();

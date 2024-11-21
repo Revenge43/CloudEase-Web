@@ -10,6 +10,13 @@ $courseId = $_GET['id'];
 
 $module = new Module();
 
+if (!isset($_SESSION['access_token'])) {
+
+    header("Location: ../../forbidden.php");
+
+    exit;
+}
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $title = $_POST['title'] ?? null;
