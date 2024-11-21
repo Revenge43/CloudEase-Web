@@ -1,7 +1,7 @@
 <?php
 include 'vendor/autoload.php';
 
-use App\Auth;
+use App\Authenticate;
 use Components\SidebarComponent;
 use Components\HeaderComponent;
 
@@ -19,19 +19,23 @@ class LoginPage {
             $email = $_POST['email'] ?? '';
             $password = $_POST['password'] ?? '';
 
-            $auth = new Auth();
+            $auth = new Authenticate();
 
             try {
                 $response = $auth->loginUser($email, $password);
-
-                $auth = new Auth();
+                $auth = new Authenticate();
                 session_start();
-                
-                $_SESSION['access_token']       =  $response['access_token'] ?? '';
-                $_SESSION['userInfo']           =  $auth->getUserInfo($_SESSION['access_token']);
-                $_SESSION['SidebarComponent']   =  SidebarComponent::render();
-                $_SESSION['HeaderComponent']    =  HeaderComponent::render();
 
+                if ($response['status'] == 200) {
+                    $_SESSION['access_token']       =  $response['access_token'] ?? '';
+                    $_SESSION['userInfo']           =  $auth->getUserInfo($_SESSION['access_token']);
+                    $_SESSION['user'] = $response['user'];
+                    $_SESSION['SidebarComponent']   =  SidebarComponent::render();
+                    $_SESSION['HeaderComponent']    =  HeaderComponent::render();
+                } else {
+                    header("Location: index.php?error=" . $response['message']);
+                }
+                
                 if (isset($response['redirect'])) {
 
                     header("Location: " . $response['redirect']);
@@ -46,6 +50,7 @@ class LoginPage {
                         </script>";
                 }
             } catch (Exception $e) {
+                die($e);
 
                 header("Location: index.php?error=" . urlencode("An error occurred: " . $e->getMessage()));
 

@@ -62,9 +62,8 @@ if (isset($_GET['id'])) {
                     <div class="grid gap-6 lg:grid-cols-3 md:grid-cols-2 sm:grid-cols-1">
                         <!-- Loop through each course -->
                         <?php foreach ($courses as $course) : ?>
-
                             <div class="bg-white rounded-lg shadow-md p-4">
-                                <img src="<?= $course['image'] ?? 'https://placehold.co/600x400?text=' . ucwords(substr($course['title'], 0, 1)) ?>" alt="Course Image" class="w-full h-64 object-cover">
+                                <img src="<?= '../../uploads/' . $course['image'] ?? 'https://placehold.co/600x400?text=' . ucwords(substr($course['title'], 0, 1)) ?>" alt="Course Image" class="w-full h-64 object-cover">
                                 <h3 class="text-lg font-semibold text-gray-800"><?= htmlspecialchars($course['title']); ?></h3>
                                 <p class="mt-2 text-gray-600"><?= $course['description']; ?></p>
                                 <!-- Link to view the course -->

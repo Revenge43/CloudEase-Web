@@ -1,63 +1,50 @@
 <?php
-
 namespace App;
 
-use GuzzleHttp\Client;
+use PDO;
+use PDOException;
+use App\Helpers;
 
 class Comments
 {
-
-    private $client;
-    private $apiUrl = 'https://onvatnocrobzlxendxxd.supabase.co';
-    private $apiKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9udmF0bm9jcm9iemx4ZW5keHhkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzEyODA1NzIsImV4cCI6MjA0Njg1NjU3Mn0.176GaFj20la7dBxTiYU_iHU4WLt0LDV_iLGMSpFElhQ';
-    private $table = 'assignments';
+    private $pdo;
+    private $table = 'comments';
 
     public function __construct()
     {
-        $this->client = new Client([
-            'base_uri' => $this->apiUrl,
-            'headers' => [
-                'apikey' => $this->apiKey,
-                'Authorization' => 'Bearer ' . $this->apiKey,
-                'Content-Type' => 'application/json',
-            ],
-        ]);
+        $this->pdo = Helpers::getPDOConnection();
     }
 
-    public function createComment($courseId, $assignmentId, $comment)
+    public function createComment($userId, $assignmentId, $text, $attachmentUrl, $courseId)
     {
         try {
+            $stmt = $this->pdo->prepare("INSERT INTO {$this->table} (course_id, user_id, assignment_id, text, file) VALUES (:course_id, :user_id, :assignment_id, :text, :file)");
+            $stmt->bindParam(':course_id', $courseId);
+            $stmt->bindParam(':user_id', $userId);
+            $stmt->bindParam(':assignment_id', $assignmentId);
+            $stmt->bindParam(':text', $text);
+            $stmt->bindParam(':file', $attachmentUrl);
 
-            $response = $this->client->post("/rest/v1/comments", [
-                'json' => [
-                    'course_id' => $courseId,
-                    'assignment_id' => $assignmentId,
-                    'comment' => $comment,
-                ],
-            ]);
+            $stmt->execute();
 
-            return json_decode($response->getBody(), true);
-
-        } catch (\GuzzleHttp\Exception\ClientException $e) {
-
-            $responseBody = $e->getResponse()->getBody()->getContents();
+            return ['message' => 'Comment created successfully'];
+        } catch (PDOException $e) {
             error_log('Error creating comment: ' . $e->getMessage());
-            error_log('Response: ' . $responseBody);
-            return 'Error: ' . $responseBody;
+            return ['error' => 'Error creating comment: ' . $e->getMessage()];
         }
     }
 
-    /**
-     * @return array
-     */
-    public function getComments()
+    public function getComments($course_id, $userId, $assignmentId)
     {
         try {
-            $response = $this->client->get("/rest/v1/comments");
+            $stmt = $this->pdo->prepare("SELECT * FROM {$this->table} WHERE course_id = :course_id AND user_id = :user_id AND assignment_id = :assignment_id");
+            $stmt->bindParam(':course_id', $course_id);
+            $stmt->bindParam(':user_id', $userId);
+            $stmt->bindParam(':assignment_id', $assignmentId);
+            $stmt->execute();
 
-            return json_decode($response->getBody(), true);
-
-        } catch (\GuzzleHttp\Exception\ClientException $e) {
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
             echo 'Error fetching comments: ' . $e->getMessage();
             return [];
         }
@@ -66,11 +53,11 @@ class Comments
     public function getUsername($userId)
     {
         try {
-            $response = $this->client->get("/rest/v1/users?user_id=eq.{$userId}");
-
-            return json_decode($response->getBody(), true);
-
-        } catch (\GuzzleHttp\Exception\ClientException $e) {
+            $stmt = $this->pdo->prepare("SELECT name FROM users WHERE user_id = :user_id");
+            $stmt->bindParam(':user_id', $userId);
+            $stmt->execute();
+            return $stmt->fetch(PDO::FETCH_ASSOC)['name'];
+        } catch (PDOException $e) {
             echo 'Error fetching user: ' . $e->getMessage();
             return [];
         }

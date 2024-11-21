@@ -46,7 +46,7 @@ $assignments = $assignments->getAssignments();
                     <h3 class="text-lg font-semibold text-gray-800">Assignment <?= $index + 1?>: <?= $assignment['assignment_title'] ?></h3>
                     <p class="mt-2 text-gray-600"><?= $assignment['assignment_description'] ?></p>
                     <p class="mt-2 text-sm text-gray-500">Score: <?= $assignment['assignment_score'] ?></p>
-                    <a href="show.php?id=<?= $assignment['course_id'] ?>" class="mt-4 inline-block text-blue-600 hover:underline">View Assignment</a>
+                    <a href="show.php?id=<?= $assignment['id'] ?>&courseId=<?= $assignment['course_id'] ?>" class="mt-4 inline-block text-blue-600 hover:underline">View Assignment</a>
                 </div>
                 <?php endforeach; ?>
             </div>

@@ -20,7 +20,7 @@ class HeaderComponent
                         <div class="relative">
                             <button class="flex items-center space-x-2 text-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-300">
                                 <img class="w-8 h-8 rounded-full" src="https://via.placeholder.com/40" alt="Profile Picture">
-                                <span>John Doe</span>
+                                <span>{$_SESSION['user']['name']}</span>
                             </button>
                             <div class="absolute right-0 z-10 hidden mt-2 w-48 py-2 bg-white rounded-md shadow-xl" data-dropdown-toggle="profileDropdown">
                                 <a href="#" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">Profile</a>

@@ -1,7 +1,7 @@
 <?php
 include 'vendor/autoload.php';
 
-use App\Auth;
+use App\Authenticate;
 
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
@@ -18,7 +18,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         exit;
     }
 
-    $auth = new Auth();
+    $auth = new Authenticate();
 
     try {
 

@@ -1,78 +1,75 @@
-<?php
-session_start();
-?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cloudease - Assignment Submissions</title>
-    <link href="https://cdn.jsdelivr.net/npm/flowbite@2.5.2/dist/flowbite.min.css" rel="stylesheet" />
-    <script src="https://cdn.jsdelivr.net/npm/flowbite@2.5.2/dist/flowbite.min.js"></script>
+    <title>Group Chat</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
 </head>
-<body class="h-screen w-screen bg-gray-100 font-sans leading-normal tracking-normal">
-    <div class="flex h-screen">
-        <!-- Sidebar -->
-        <aside class="w-64 bg-blue-800 text-white flex flex-col h-full">
-            <div class="p-4">
-                <h1 class="text-2xl font-bold">Cloudease LMS</h1>
-            </div>
-            <?= $_SESSION['SidebarComponent'] ?>
-        </aside>
+<body class="bg-gray-100">
 
-        <!-- Main Content -->
-        <main class="flex-1 p-6 bg-gray-100">
-            <h2 class="text-2xl font-semibold text-gray-700 mb-6">Assignment Submissions</h2>
-
-            <!-- Student List Table -->
-            <div class="overflow-x-auto bg-white rounded-lg shadow-md p-4">
-                <table class="w-full table-auto border-collapse">
-                    <thead>
-                        <tr class="bg-gray-200 text-left text-gray-600">
-                            <th class="px-4 py-2">Student ID</th>
-                            <th class="px-4 py-2">Name</th>
-                            <th class="px-4 py-2">Assignment Title</th>
-                            <th class="px-4 py-2">Submission Date</th>
-                            <th class="px-4 py-2">Status</th>
-                            <th class="px-4 py-2">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <!-- Example Student Row -->
-                        <tr class="border-b">
-                            <td class="px-4 py-2">1001</td>
-                            <td class="px-4 py-2">Alice Johnson</td>
-                            <td class="px-4 py-2">Introduction to Python</td>
-                            <td class="px-4 py-2">2024-11-09</td>
-                            <td class="px-4 py-2">
-                                <span class="px-2 py-1 text-sm text-white bg-green-500 rounded">Submitted</span>
-                            </td>
-                            <td class="px-4 py-2">
-                                <button class="px-3 py-1 text-sm text-white bg-blue-600 rounded hover:bg-blue-700">View</button>
-                                <button class="px-3 py-1 text-sm text-white bg-red-600 rounded hover:bg-red-700">Mark</button>
-                            </td>
-                        </tr>
-
-                        <!-- Another Student Row -->
-                        <tr class="border-b">
-                            <td class="px-4 py-2">1002</td>
-                            <td class="px-4 py-2">Bob Smith</td>
-                            <td class="px-4 py-2">Introduction to Python</td>
-                            <td class="px-4 py-2">2024-11-08</td>
-                            <td class="px-4 py-2">
-                                <span class="px-2 py-1 text-sm text-white bg-red-500 rounded">Pending</span>
-                            </td>
-                            <td class="px-4 py-2">
-                                <a href="show.php" class="px-3 py-1 text-sm text-white bg-blue-600 rounded hover:bg-blue-700">View</a>
-                                <button class="px-3 py-1 text-sm text-white bg-red-600 rounded hover:bg-red-700">Remind</button>
-                            </td>
-                        </tr>
-
-                        <!-- Additional rows as needed -->
-                    </tbody>
-                </table>
-            </div>
-        </main>
+<div class="max-w-4xl mx-auto p-6 bg-white rounded-lg shadow-md mt-6">
+    <h1 class="text-2xl font-bold mb-4">Group Chat</h1>
+    <div id="messages-container" class="h-96 overflow-y-auto border border-gray-300 rounded-lg p-4 bg-gray-50">
+        <!-- Messages will load here -->
     </div>
+
+    <form id="chat-form" class="mt-4 flex">
+        <input type="text" id="user_name" name="user_name" placeholder="Your Name"
+               class="w-1/4 p-2 border border-gray-300 rounded-l-lg focus:outline-none focus:ring">
+        <input type="text" id="message" name="message" placeholder="Type your message"
+               class="w-2/4 p-2 border border-gray-300 focus:outline-none focus:ring">
+        <button type="submit"
+                class="w-1/4 p-2 bg-blue-600 text-white rounded-r-lg hover:bg-blue-700 focus:outline-none">
+            Send
+        </button>
+    </form>
+</div>
+
+<script>
+    // Fetch messages
+    function fetchMessages() {
+        fetch('fetch_messages.php')
+            .then(response => response.json())
+            .then(data => {
+                const container = document.getElementById('messages-container');
+                container.innerHTML = '';
+                data.forEach(msg => {
+                    const messageElement = document.createElement('div');
+                    messageElement.classList.add('p-2', 'mb-2', 'bg-white', 'rounded-lg', 'shadow');
+                    messageElement.innerHTML = `
+                        <p class="font-bold">${msg.user_name}</p>
+                        <p>${msg.message}</p>
+                        <p class="text-sm text-gray-500">${new Date(msg.created_at).toLocaleString()}</p>
+                    `;
+                    container.appendChild(messageElement);
+                });
+                container.scrollTop = container.scrollHeight; // Auto-scroll
+            })
+            .catch(console.error);
+    }
+
+    // Send message
+    document.getElementById('chat-form').addEventListener('submit', function (event) {
+        event.preventDefault();
+        const userName = document.getElementById('user_name').value || 'Anonymous';
+        const message = document.getElementById('message').value;
+
+        fetch('send_message.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: `user_name=${encodeURIComponent(userName)}&message=${encodeURIComponent(message)}`
+        }).then(response => response.json())
+          .then(() => {
+              document.getElementById('message').value = ''; // Clear the input
+              fetchMessages(); // Refresh messages
+          })
+          .catch(console.error);
+    });
+
+    // Auto-refresh messages every 5 seconds
+    setInterval(fetchMessages, 5000);
+    fetchMessages(); // Initial fetch
+</script>
 </body>
 </html>

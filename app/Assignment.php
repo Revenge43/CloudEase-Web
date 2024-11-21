@@ -2,99 +2,78 @@
 
 namespace App;
 
-use GuzzleHttp\Client;
-use GuzzleHttp\Exception\RequestException;
+use PDO;
+use PDOException;
+use App\Helpers;
 
 class Assignment
 {
-    private $client;
-    private $apiUrl = 'https://onvatnocrobzlxendxxd.supabase.co';
-    private $apiKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9udmF0bm9jcm9iemx4ZW5keHhkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzEyODA1NzIsImV4cCI6MjA0Njg1NjU3Mn0.176GaFj20la7dBxTiYU_iHU4WLt0LDV_iLGMSpFElhQ';
+    private $pdo;
     private $table = 'assignments';
 
     public function __construct()
     {
-        $this->client = new Client([
-            'base_uri' => $this->apiUrl,
-            'headers' => [
-                'apikey' => $this->apiKey,
-                'Authorization' => 'Bearer ' . $this->apiKey,
-                'Content-Type' => 'application/json',
-            ],
-        ]);
+        $this->pdo = Helpers::getPDOConnection();
     }
 
+    // Create an assignment
     public function createAssignment($title, $description, $score, $attachmentUrl, $courseId)
     {
-        $payload = [
-            'assignment_title' => $title,
-            'assignment_description' => $description,
-            'assignment_score' => $score,
-            'assignment_file' => $attachmentUrl,
-            'course_id' => $courseId,
-        ];
-
+        $sql = "INSERT INTO {$this->table} (assignment_title, assignment_description, assignment_score, assignment_file, course_id) 
+                VALUES (:title, :description, :score, :attachmentUrl, :courseId)";
+        
         try {
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->bindParam(':title', $title);
+            $stmt->bindParam(':description', $description);
+            $stmt->bindParam(':score', $score);
+            $stmt->bindParam(':attachmentUrl', $attachmentUrl);
+            $stmt->bindParam(':courseId', $courseId);
 
-            $response = $this->client->post("/rest/v1/{$this->table}", [
-                'json' => $payload,
-            ]);
-
-            return json_decode($response->getBody(), true);
-        } catch (\GuzzleHttp\Exception\ClientException $e) {
-
-            $responseBody = $e->getResponse()->getBody()->getContents();
-            error_log('Error creating module: ' . $e->getMessage());
-            error_log('Response: ' . $responseBody);
-            return 'Error: ' . $responseBody;
+            $stmt->execute();
+            return ['status' => 'success', 'message' => 'Assignment created successfully'];
+        } catch (PDOException $e) {
+            // Log error if the query fails
+            error_log('Error creating assignment: ' . $e->getMessage());
+            return ['status' => 'error', 'message' => 'Error creating assignment'];
         }
     }
-    /**
-     * @return array
-     */
+
+    // Get all assignments
     public function getAssignments()
     {
-        try {
-            $response = $this->client->get("/rest/v1/{$this->table}", [
-                'query' => [
-                    'select' => '*',
-                ],
-            ]);
+        $sql = "SELECT * FROM {$this->table}";
 
-            return json_decode($response->getBody(), true);
-        } catch (\GuzzleHttp\Exception\ClientException $e) {
-            $responseBody = $e->getResponse()->getBody()->getContents();
+        try {
+            $stmt = $this->pdo->query($sql);
+            return $stmt->fetchAll(\PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            // Log error if the query fails
             error_log('Error fetching assignments: ' . $e->getMessage());
-            error_log('Response: ' . $responseBody);
-            return 'Error: ' . $responseBody;
+            return ['status' => 'error', 'message' => 'Error fetching assignments'];
         }
     }
 
-    /**
-     * @param string $courseId
-     * @return array
-     */
-    public function getAssignment($courseId)
+    // Get assignments by course ID
+    public function getAssignment($assignmentId)
     {
+        $sql = "SELECT * FROM {$this->table} WHERE id = :assignment_id";
+
         try {
-
-            $response = $this->client->get("/rest/v1/{$this->table}?course_id=eq.{$courseId}");
-
-            return json_decode($response->getBody(), true);
-        } catch (\GuzzleHttp\Exception\ClientException $e) {
-
-            echo 'Error fetching courses: ' . $e->getMessage();
-
-            return [];
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->bindParam(':assignment_id', $assignmentId);
+            $stmt->execute();
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            // Log error if the query fails
+            error_log('Error fetching assignments: ' . $e->getMessage());
+            return ['status' => 'error', 'message' => 'Error fetching assignments'];
         }
     }
 
-    /**
-     * @return
-     */
+    // Render the attachment based on the file type
     public function renderAttachment($filePath)
     {
-
         $extension = strtolower(pathinfo($filePath, PATHINFO_EXTENSION));
 
         if (in_array($extension, ['mp4', 'webm', 'mov'])) {
@@ -104,13 +83,13 @@ class Assignment
                             Your browser does not support the video tag.
                         </video>
                           <center>
-                        <a href='<?= htmlspecialchars($filePath) ?>' download target='_blank' class='mt-5 text-blue-600 hover:underline'>
+                        <a href='" . htmlspecialchars($filePath) . "' download target='_blank' class='mt-5 text-blue-600 hover:underline'>
                             Download
                         </a>
                     </center>
                     </div>";
         } elseif (in_array($extension, ['jpg', 'jpeg', 'png', 'gif'])) {
-            return "<div class='mt-4'>
+            return "<div class='m-2 p-1 w-80'>
                        <a href='$filePath' download><img src='$filePath' alt='Attachment' class='w-full rounded-md'></a>
                     </div>";
         } elseif (in_array($extension, ['mp3', 'wav', 'ogg'])) {
@@ -125,7 +104,6 @@ class Assignment
                         <iframe src='" . htmlspecialchars($filePath) . "' class='w-full h-96 rounded-md'></iframe>
                     </div>";
         } else {
-
             return "<div class='mt-4'>
                         <a href='" . htmlspecialchars($filePath) . "' target='_blank' class='text-blue-600 hover:underline'>
                             Download File

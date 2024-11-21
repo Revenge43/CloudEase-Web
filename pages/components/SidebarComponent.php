@@ -7,13 +7,11 @@ class SidebarComponent
      * @var array $routes
      */
     private static $routes = [
-        '/cloudease/pages/dashboard.php' => 'Dashboard',
-        '/cloudease/pages/course/index.php' => 'Courses',
-        '/cloudease/pages/grade/index.php' => 'Grades',
-        '/cloudease/pages/discussion/index.php' => 'Discussions',
-        '/cloudease/pages/assignment/index.php' => 'Assignments',
-        '/cloudease/pages/settings/index.php' => 'Settings',
-        '/cloudease/logout.php' => 'Logout',
+        '/pages/dashboard.php' => 'Dashboard',
+        '/pages/course/index.php' => 'Courses',
+        '/pages/discussion/index.php' => 'Discussions',
+        '/pages/assignment/index.php' => 'Assignments',
+        '/logout.php' => 'Logout',
     ];
 
     /**

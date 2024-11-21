@@ -37,8 +37,10 @@
 
         $result = $assignment->createAssignment($title, $description, $score, $attachmentUrl, $courseId);
 
+        if ($result['status'] != 'error') {
             header("Location: index.php?message=Assignment added successfully");
-        exit;
+            exit;
+        }
     }
     ?>
     <!DOCTYPE html>
@@ -66,12 +68,12 @@
             <main class="flex-1 p-6 bg-gray-100">
                 <header class="flex items-center justify-between p-6 bg-white shadow-md">
                     <h2 class="text-2xl font-semibold text-gray-700">Add Assignment</h2>
-                    <a href="index.php?id=<?= $_GET['id'] ?>" class="text-blue-600 hover:underline">Back to Course</a>
+                    <a href="index.php" class="text-blue-600 hover:underline">Back to Course</a>
                 </header>
 
                 <!-- Add assignment Form -->
                 <div class="p-6 mt-6 bg-white rounded-lg shadow-md">
-                    <form action="<?= $_SERVER['PHP_SELF'] ?>?id=<?= $_GET['id'] ?>" method="POST" enctype="multipart/form-data">
+                    <form action="create.php" method="POST" enctype="multipart/form-data">
                         <!-- Title Field -->
                         <div class="mb-4">
                             <label for="assignment-title" class="block text-gray-700 font-medium">Assignment Title</label>

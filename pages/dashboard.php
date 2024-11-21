@@ -34,7 +34,7 @@ if (!isset($_SESSION['access_token'])) {
             <div class="p-6 bg-gray-100">
                 <!-- Welcome Message -->
                 <div class="mb-6 bg-white rounded-lg shadow-md p-6">
-                    <h2 class="text-2xl font-semibold text-gray-700">Welcome to Cloudease, <?= $_SESSION['userInfo']['email'] ?>!</h2>
+                    <h2 class="text-2xl font-semibold text-gray-700">Welcome to Cloudease, <?= $_SESSION['user']['email'] ?>!</h2>
                     <p class="mt-2 text-gray-600">Here’s an overview of your recent activity and progress.</p>
                 </div>
 

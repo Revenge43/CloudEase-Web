@@ -4,7 +4,6 @@ include '../../../vendor/autoload.php';
 session_start();
 
 use App\Course;
-use App\Helpers;
 use App\Module;
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -12,7 +11,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $title = $_POST['module_title'] ?? null;
     $description = $_POST['module_description'] ?? null;
     $courseId = $_GET['id'] ?? '';
-    $attachmentUrl = null;
+    // $attachmentUrl = null;
 
     if (!$title || !$description) {
 
@@ -23,20 +22,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $courseModule = new Course();
 
-    if (isset($_FILES['module_file']) && $_FILES['module_file']['error'] === UPLOAD_ERR_OK) {
-        $attachmentUrl = Helpers::handleFileUpload($_FILES['module_file']);
+    // if (isset($_FILES['module_file']) && $_FILES['module_file']['error'] === UPLOAD_ERR_OK) {
+    //     $attachmentUrl = Helpers::handleFileUpload($_FILES['module_file']);
 
-        if (!$attachmentUrl) {
+    //     if (!$attachmentUrl) {
 
-            header("Location: create.php?error=File upload failed");
+    //         header("Location: create.php?error=File upload failed");
 
-            exit;
-        }
-    }
+    //         exit;
+    //     }
+    // }
 
     $module = new Module();
 
-    $module->createModule($title, $description, $attachmentUrl, $courseId);
+    $module->createModule($title, $description, $courseId);
 
     header("Location: ../show.php?id=$courseId&message=Module added successfully");
 
@@ -89,11 +88,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     </div>
 
                     <!-- File Upload (Optional) -->
-                    <div class="mb-4">
-                        <label for="module-file" class="block text-gray-700 font-medium">Upload Attachment (Optional)</label>
-                        <input type="file" id="module-file" name="module_file"
-                               class="w-full px-4 py-2 mt-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
-                    </div>
+                        <!-- <div class="mb-4">
+                            <label for="module-file" class="block text-gray-700 font-medium">Upload Attachment (Optional)</label>
+                            <input type="file" id="module-file" name="module_file"
+                                class="w-full px-4 py-2 mt-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
+                        </div> -->
 
                     <!-- Submit Button -->
                     <div class="flex justify-end">

@@ -1,17 +1,21 @@
 <?php
 namespace App;
 
-use GuzzleHttp\Client;
-use GuzzleHttp\Exception\RequestException;
-
+use Exception;
+use PDO;
+use PDOException;
 
 class Helpers
 {
-    private static $serviceRoleKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9udmF0bm9jcm9iemx4ZW5keHhkIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTczMTI4MDU3MiwiZXhwIjoyMDQ2ODU2NTcyfQ.1Z3Xjww_hEek6Qq3rNGu-7BQuqnMOZ5D2GG11XxRuME';
-    private static $storageUrl = 'https://onvatnocrobzlxendxxd.supabase.co/storage/v1/object/';
+    private static $host = 'localhost';
+    private static $db = 'cloudease';
+    private static $user = 'root';
+    private static $password = ''; // Empty password for local environment
 
-     /**
-     * Handle file upload to Supabase storage
+    private static $storageDirectory = '../../uploads/'; // Directory where files will be stored
+
+    /**
+     * Handle file upload and store file information in MySQL database
      *
      * @param array $file
      * @return string|null
@@ -19,48 +23,64 @@ class Helpers
     public static function handleFileUpload($file)
     {
         try {
+            // Check if the file is uploaded properly
+            if (!isset($file['tmp_name']) || !is_uploaded_file($file['tmp_name'])) {
+                error_log('No file uploaded or invalid file.');
+                return null;
+            }
 
             $fileTmpPath = $file['tmp_name'];
             $originalFileName = basename($file['name']);
             $fileExtension = pathinfo($originalFileName, PATHINFO_EXTENSION);
 
+            // Generate a hashed file name to avoid collisions
             $hashedFileName = md5(uniqid() . time()) . '.' . $fileExtension;
 
-            $supabasePath = $hashedFileName;
-
-            $uploadClient = new Client([
-                'base_uri' => self::$storageUrl,
-                'headers' => [
-                    'Authorization' => 'Bearer ' . self::$serviceRoleKey,
-                ],
-            ]);
-
-            $response = $uploadClient->post("assets/{$supabasePath}", [
-                'body' => fopen($fileTmpPath, 'r'),
-                'headers' => [
-                    'Content-Type' => mime_content_type($fileTmpPath),
-                ],
-            ]);
-
-            fclose(fopen($fileTmpPath, 'r'));
-
-            if ($response->getStatusCode() === 200) {
-
-                $url = self::$storageUrl . "public/assets/{$supabasePath}";
-                return $url;
+            // Ensure the uploads directory exists
+            if (!file_exists(self::$storageDirectory)) {
+                mkdir(self::$storageDirectory, 0777, true); // Create directory if it doesn't exist
             }
 
-            error_log('Upload failed with status: ' . $response->getStatusCode());
-            error_log($response->getBody()->getContents());
+            // Determine the file path to store in the server
+            $filePath = self::$storageDirectory . $hashedFileName;
 
+
+            // Debugging: Log the file paths
+            error_log('Temporary file path: ' . $fileTmpPath);
+            error_log('Target file path: ' . $filePath);
+
+            // Move the uploaded file to the specified directory
+            if (move_uploaded_file($fileTmpPath, $filePath)) {
+                // Return the URL of the uploaded file
+                return $filePath;
+            } else {
+                error_log('Failed to move the uploaded file.');
+                return null;
+            }
+        } catch (PDOException $e) {
+            error_log('Database error: ' . $e->getMessage());
             return null;
-
-        } catch (RequestException $e) {
-
-            error_log('Error uploading file: ' . $e->getMessage());
-            error_log(print_r($e->getResponse()->getBody()->getContents(), true));
-
+        } catch (Exception $e) {
+            error_log('General error: ' . $e->getMessage());
             return null;
+        }
+    }
+
+    /**
+     * Get PDO connection to the database
+     *
+     * @return PDO
+     */
+    public static function getPDOConnection()
+    {
+        $dsn = 'mysql:host=' . self::$host . ';dbname=' . self::$db . ';charset=utf8';
+        try {
+            $pdo = new PDO($dsn, self::$user, self::$password);
+            $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+            return $pdo;
+        } catch (PDOException $e) {
+            error_log('Database connection failed: ' . $e->getMessage());
+            throw $e;
         }
     }
 }
